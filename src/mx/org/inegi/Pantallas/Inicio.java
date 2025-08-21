@@ -157,7 +157,7 @@ public class Inicio extends javax.swing.JFrame {
         } catch (IOException ex) {
             Logger.getLogger(Inicio.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+          System.out.println("hola");
     }//GEN-LAST:event_jButton1ActionPerformed
 
     /**
