@@ -290,6 +290,7 @@ public class LeerExcel {
             }
 
             progressBar.setValue(100);
+            f.setVisible(false);
         } catch (IOException e) {
             e.printStackTrace();
         }
