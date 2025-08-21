@@ -1,5 +1,7 @@
 package mx.org.inegi.leerExcel;
 
+import java.awt.BorderLayout;
+import java.awt.Container;
 import java.awt.FileDialog;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -8,8 +10,11 @@ import java.util.List;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import javax.swing.BorderFactory;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.JProgressBar;
+import javax.swing.border.Border;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.Row;
@@ -18,7 +23,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 public class LeerExcel {
 
-    StringBuilder createSQL,createReferencias;
+    StringBuilder createSQL, createReferencias;
     String sql;
 
     public void GeneraScript(String Ruta) throws IOException {
@@ -26,12 +31,28 @@ public class LeerExcel {
         String filePath = Ruta;
         LeerCelda Cel = new LeerCelda();
         createSQL = new StringBuilder();
-        createReferencias= new StringBuilder();
+        createReferencias = new StringBuilder();
 
+        JFrame f = new JFrame("Progreso Genera Script .xls");
+        f.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        Container content = f.getContentPane();
+        JProgressBar progressBar = new JProgressBar();
+        progressBar.removeAll();
+        progressBar.setValue(0);
+        progressBar.setStringPainted(true);
+        Border border = BorderFactory.createTitledBorder("Cargando...");
+        progressBar.setBorder(border);
+        content.add(progressBar, BorderLayout.CENTER);
+        f.setSize(300, 100);
+        f.setResizable(false);
+        f.setLocationRelativeTo(null);
+        f.setVisible(true);
+
+        progressBar.setValue(0);
         try ( FileInputStream fis = new FileInputStream(filePath);  Workbook workbook = new XSSFWorkbook(fis)) {
 
             int numberOfSheets = workbook.getNumberOfSheets();
-
+            progressBar.setValue(15);
             for (int i = 0; i < numberOfSheets; i++) {
                 String sheetName = workbook.getSheetName(i);
 
@@ -147,12 +168,12 @@ public class LeerExcel {
                     }
                 }
             }
-            
-         //Procesa Script estructura TR   
-           for (int i = 0; i < numberOfSheets; i++) {
-                String sheetName = workbook.getSheetName(i);   
+            progressBar.setValue(50);
+            //Procesa Script estructura TR   
+            for (int i = 0; i < numberOfSheets; i++) {
+                String sheetName = workbook.getSheetName(i);
                 if (sheetName.startsWith("TR_")) {
-                     Sheet sheet = workbook.getSheet(sheetName);
+                    Sheet sheet = workbook.getSheet(sheetName);
                     if (sheet != null) {
                         Row headerRow = sheet.getRow(4);
                         if (headerRow != null) {
@@ -160,9 +181,9 @@ public class LeerExcel {
                             int colTipo = -1;
                             int colKey = -1;
                             int colObligatorio = -1;
-                            int colCatalogo= -1;
-                            int colReferencia= -1;
-                            int ColNombreCatalogoRef=-1;
+                            int colCatalogo = -1;
+                            int colReferencia = -1;
+                            int ColNombreCatalogoRef = -1;
 
                             for (int c = 0; c < headerRow.getLastCellNum(); c++) {
                                 String header = Cel.LeerCelda(sheet, 4, c).toUpperCase();
@@ -181,10 +202,10 @@ public class LeerExcel {
                                 if (header.equals("CATALOGO")) {
                                     colCatalogo = c;
                                 }
-                                 if (header.startsWith("REFERENCIA")) {
+                                if (header.startsWith("REFERENCIA")) {
                                     colReferencia = c;
                                 }
-                                 if (header.equals("CATALOGO O TABLA REFERENCIADO")) {
+                                if (header.equals("CATALOGO O TABLA REFERENCIADO")) {
                                     ColNombreCatalogoRef = c;
                                 }
                             }
@@ -197,7 +218,6 @@ public class LeerExcel {
 
                                 // Lista para guardar campos que son PK
                                 List<String> pkFields = new ArrayList<>();
-                               
 
                                 //Lista para guardar campos que son Obligatorios 
                                 for (int r = 5; r <= sheet.getLastRowNum(); r++) {
@@ -210,23 +230,22 @@ public class LeerExcel {
                                     String tipo = Cel.LeerCelda(sheet, r, colTipo);
                                     String key = Cel.LeerCelda(sheet, r, colKey);
                                     String Obligatorio = Cel.LeerCelda(sheet, r, colObligatorio);
-                                 
-                                    if ((colCatalogo!=-1)&&(colReferencia!=-1)&&(ColNombreCatalogoRef!=-1))
-                                   {
-                                    String Ref=Cel.LeerCelda(sheet, r, colCatalogo);
-                                    String CampoRef=Cel.LeerCelda(sheet, r, colReferencia);
-                                   String ColCatRef=Cel.LeerCelda(sheet, r, ColNombreCatalogoRef);
-                                    
-                                     if (Ref != null && Ref.equalsIgnoreCase("SI")) {
-                                     createReferencias.append("   ALTER TABLE ").append(Cel.LeerCelda(sheet, 3, 0)).append(" ADD CONSTRAINT FK").append(Cel.LeerCelda(sheet, 3, 0).replace("TR_","").replace("_","")).append("_").append(campo).append(" FOREIGN KEY (").append(campo).append(")\n").append("REFERENCES ").append(ColCatRef).append("(").append(CampoRef).append(") ENABLE; \n");  
+
+                                    if ((colCatalogo != -1) && (colReferencia != -1) && (ColNombreCatalogoRef != -1)) {
+                                        String Ref = Cel.LeerCelda(sheet, r, colCatalogo);
+                                        String CampoRef = Cel.LeerCelda(sheet, r, colReferencia);
+                                        String ColCatRef = Cel.LeerCelda(sheet, r, ColNombreCatalogoRef);
+
+                                        if (Ref != null && Ref.equalsIgnoreCase("SI")) {
+                                            createReferencias.append("   ALTER TABLE ").append(Cel.LeerCelda(sheet, 3, 0)).append(" ADD CONSTRAINT FK").append(Cel.LeerCelda(sheet, 3, 0).replace("TR_", "").replace("_", "")).append("_").append(campo).append(" FOREIGN KEY (").append(campo).append(")\n").append("REFERENCES ").append(ColCatRef).append("(").append(CampoRef).append(") ENABLE; \n");
+                                        }
                                     }
-                                   }
                                     if (key != null && key.equalsIgnoreCase("TR-FK")) {
-                                          String CampoRef=Cel.LeerCelda(sheet, r, colReferencia);
-                                        String ColCatRef=Cel.LeerCelda(sheet, r, ColNombreCatalogoRef);
-                                       createReferencias.append("   ALTER TABLE ").append(Cel.LeerCelda(sheet, 3, 0)).append(" ADD CONSTRAINT FK").append(Cel.LeerCelda(sheet, 3, 0).replace("TR_","").replace("_", "")).append("_").append(campo).append(" FOREIGN KEY (").append(CampoRef).append(")\n").append("REFERENCES ").append(ColCatRef).append("(").append(CampoRef).append(") ENABLE; \n"); 
+                                        String CampoRef = Cel.LeerCelda(sheet, r, colReferencia);
+                                        String ColCatRef = Cel.LeerCelda(sheet, r, ColNombreCatalogoRef);
+                                        createReferencias.append("   ALTER TABLE ").append(Cel.LeerCelda(sheet, 3, 0)).append(" ADD CONSTRAINT FK").append(Cel.LeerCelda(sheet, 3, 0).replace("TR_", "").replace("_", "")).append("_").append(campo).append(" FOREIGN KEY (").append(CampoRef).append(")\n").append("REFERENCES ").append(ColCatRef).append("(").append(CampoRef).append(") ENABLE; \n");
                                     }
- 
+
                                     if (Obligatorio != null && Obligatorio.equalsIgnoreCase("SI")) {
                                         if (!campo.isEmpty() && !tipo.isEmpty()) {
                                             createSQL.append("    ").append(campo).append(" ").append(tipo).append(" NOT NULL,\n");
@@ -241,12 +260,9 @@ public class LeerExcel {
 
                                     if (key != null && key.equalsIgnoreCase("PK")) {
                                         pkFields.add(campo);
-                                    }  
-                                    
-                                   
-                                    
+                                    }
+
                                 }
-                                 
 
                                 // Agregar PRIMARY KEY si hay campos
                                 if (!pkFields.isEmpty()) {
@@ -262,7 +278,7 @@ public class LeerExcel {
                                 }
 
                                 createSQL.append(");\n");
-                                
+
                                 createSQL.append(createReferencias);
                                 createReferencias.setLength(0);
 
@@ -271,9 +287,9 @@ public class LeerExcel {
                         }
                     }
                 }
-           }
-                
-                
+            }
+
+            progressBar.setValue(100);
         } catch (IOException e) {
             e.printStackTrace();
         }

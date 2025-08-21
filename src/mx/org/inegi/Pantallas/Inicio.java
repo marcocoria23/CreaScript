@@ -151,6 +151,7 @@ public class Inicio extends javax.swing.JFrame {
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         // TODO add your handling code here:
+   new Thread(() -> {    
         LeerExcel Leer=new LeerExcel();
         try {
             Leer.GeneraScript(VRutaAr);
@@ -158,6 +159,7 @@ public class Inicio extends javax.swing.JFrame {
             Logger.getLogger(Inicio.class.getName()).log(Level.SEVERE, null, ex);
         }
           System.out.println("hola");
+    }).start(); 
     }//GEN-LAST:event_jButton1ActionPerformed
 
     /**
