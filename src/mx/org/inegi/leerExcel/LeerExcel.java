@@ -288,7 +288,7 @@ public class LeerExcel {
                             }
                         }
                          else{
-                              JOptionPane.showMessageDialog(null, "favor de ferificar nombre de encabezado en la pestaña "+sheetName);
+                              JOptionPane.showMessageDialog(null, "favor de Verificar nombre de encabezado en la pestaña "+sheetName);
                               BGuarArchivo=false;
                               break;
                          }
