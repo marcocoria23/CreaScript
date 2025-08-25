@@ -9,6 +9,7 @@ import java.awt.FileDialog;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 import mx.org.inegi.leerExcel.LeerExcel;
 
 /**
@@ -43,7 +44,7 @@ public class Inicio extends javax.swing.JFrame {
         jLabel2 = new javax.swing.JLabel();
         Seleccionar_Archivo = new javax.swing.JButton();
         TRutaArchivo = new javax.swing.JTextField();
-        jButton1 = new javax.swing.JButton();
+        BProcesa = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -73,10 +74,10 @@ public class Inicio extends javax.swing.JFrame {
 
         TRutaArchivo.setEnabled(false);
 
-        jButton1.setText("Procesar Script");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
+        BProcesa.setText("Procesar Script");
+        BProcesa.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
+                BProcesaActionPerformed(evt);
             }
         });
 
@@ -95,7 +96,7 @@ public class Inicio extends javax.swing.JFrame {
                         .addComponent(Seleccionar_Archivo, javax.swing.GroupLayout.PREFERRED_SIZE, 63, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(236, 236, 236))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(jButton1)
+                        .addComponent(BProcesa)
                         .addGap(157, 157, 157))))
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -125,7 +126,7 @@ public class Inicio extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(Seleccionar_Archivo)
                 .addGap(50, 50, 50)
-                .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 49, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(BProcesa, javax.swing.GroupLayout.PREFERRED_SIZE, 49, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(76, Short.MAX_VALUE))
         );
 
@@ -149,18 +150,26 @@ public class Inicio extends javax.swing.JFrame {
         
     }//GEN-LAST:event_Seleccionar_ArchivoActionPerformed
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+    private void BProcesaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BProcesaActionPerformed
         // TODO add your handling code here:
    new Thread(() -> {    
         LeerExcel Leer=new LeerExcel();
         try {
+         if (!TRutaArchivo.getText().equals(""))
+         {
+            BProcesa.setEnabled(false);
             Leer.GeneraScript(VRutaAr);
+            BProcesa.setEnabled(true);
+         }else
+         {
+              JOptionPane.showMessageDialog(null, "favor de seleccionar archivo");
+         }
         } catch (IOException ex) {
             Logger.getLogger(Inicio.class.getName()).log(Level.SEVERE, null, ex);
         }
           System.out.println("hola");
     }).start(); 
-    }//GEN-LAST:event_jButton1ActionPerformed
+    }//GEN-LAST:event_BProcesaActionPerformed
 
     /**
      * @param args the command line arguments
@@ -198,9 +207,9 @@ public class Inicio extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton BProcesa;
     private javax.swing.JButton Seleccionar_Archivo;
     private javax.swing.JTextField TRutaArchivo;
-    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel1;

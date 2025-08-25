@@ -32,6 +32,7 @@ public class LeerExcel {
         LeerCelda Cel = new LeerCelda();
         createSQL = new StringBuilder();
         createReferencias = new StringBuilder();
+        boolean BGuarArchivo=true; 
 
         JFrame f = new JFrame("Progreso Genera Script .xls");
         f.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -175,32 +176,42 @@ public class LeerExcel {
                             int colCatalogo = -1;
                             int colReferencia = -1;
                             int ColNombreCatalogoRef = -1;
+                            int NombreColumna=0;
 
                             for (int c = 0; c < headerRow.getLastCellNum(); c++) {
                                 String header = Cel.LeerCelda(sheet, 4, c).toUpperCase();
                                 if (header.startsWith("CAMPO")) {
                                     colCampo = c;
+                                    NombreColumna++;
                                 }
                                 if (header.startsWith("TIPO")) {
                                     colTipo = c;
+                                    NombreColumna++;
                                 }
                                 if (header.startsWith("KEY")) {
                                     colKey = c;
+                                    NombreColumna++;
                                 }
                                 if (header.startsWith("OBLIGA")) {
                                     colObligatorio = c;
+                                    NombreColumna++;
                                 }
                                 if (header.equals("CATALOGO")) {
                                     colCatalogo = c;
+                                    NombreColumna++;
                                 }
                                 if (header.startsWith("REFERENCIA")) {
                                     colReferencia = c;
+                                    NombreColumna++;
                                 }
                                 if (header.equals("CATALOGO O TABLA REFERENCIADO")) {
                                     ColNombreCatalogoRef = c;
+                                    NombreColumna++;
                                 }
                             }
 
+                         if (NombreColumna>=7)  
+                         {
                             if (colCampo == -1 || colTipo == -1 || colKey == -1 || colObligatorio == -1) {
                                 // System.out.println("Faltan columnas obligatorias en " + sheetName);
                             } else {
@@ -276,16 +287,28 @@ public class LeerExcel {
                                 // System.out.println(createSQL.toString());
                             }
                         }
+                         else{
+                              JOptionPane.showMessageDialog(null, "favor de ferificar nombre de encabezado en la pestaña "+sheetName);
+                              BGuarArchivo=false;
+                              break;
+                         }
+                        }
                     }
                 }
             }
 
-            progressBar.setValue(100);
-            f.setVisible(false);
+        progressBar.setValue(100);
+        f.setVisible(false);    
+            
         } catch (IOException e) {
             e.printStackTrace();
         }
-        SaveSQLToFile(createSQL.toString());
+        
+        if (BGuarArchivo==true)
+        {
+        SaveSQLToFile(createSQL.toString());    
+        }
+        
     }
 
     public static void SaveSQLToFile(String createSQL) throws IOException {
