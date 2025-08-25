@@ -76,38 +76,29 @@ public class LeerExcel {
 
                             for (int j = 0; j < encabezados.size(); j++) {
                                 String colName = encabezados.get(j);
-
-                                if (encabezados.size() > 2) {
-                                    if (j % 2 == 0) {
-                                        createSQL.append("    ").append(colName).append(" NUMBER");
-                                        pkFields.add(colName);
-                                    } else {
-                                        createSQL.append("    ").append(colName).append(" VARCHAR2(200)");
-                                    }
-                                } else {
-                                    if (j % 2 == 0) {
-                                        if (j == 0) {
-                                            createSQL.append("    ").append(colName).append(" NUMBER PRIMARY KEY");
-                                        } else {
-                                            createSQL.append("    ").append(colName).append(" NUMBER");
-                                        }
-                                    } else {
-                                        createSQL.append("    ").append(colName).append(" VARCHAR2(200)");
-                                    }
-                                }
-
+                               if (colName.startsWith("CAT") || colName.startsWith("ID"))
+                               {
+                                if (j == 0) {
+                                createSQL.append("    ").append(colName).append(" NUMBER PRIMARY KEY");
+                                }   
+                                else{
+                                 createSQL.append("    ").append(colName).append(" NUMBER");      
+                                }  
+                               }else{
+                                 createSQL.append("    ").append(colName).append(" VARCHAR2(200)");
+                               }
                                 if (j < encabezados.size() - 1) {
                                     createSQL.append(",");
                                 }
                                 createSQL.append("\n");
                             }
-                            if (encabezados.size() > 2) {
+                          /*  if (encabezados.size() > 2) {
                                 if (!pkFields.isEmpty()) {
                                     createSQL.append("    PRIMARY KEY (");
                                     createSQL.append(String.join(", ", pkFields));
                                     createSQL.append(")\n");
                                 }
-                            }
+                            }*/
                             createSQL.append(");\n");
 
                             // System.out.println(createSQL.toString());
