@@ -86,7 +86,7 @@ public class LeerExcel {
                                  createSQL.append("    ").append(colName).append(" NUMBER");      
                                 }  
                                }else{
-                                 createSQL.append("    ").append(colName).append(" VARCHAR2(200)");
+                                 createSQL.append("    ").append(colName).append(" VARCHAR2(300)");
                                }
                                 if (j < encabezados.size() - 1) {
                                     createSQL.append(",");
