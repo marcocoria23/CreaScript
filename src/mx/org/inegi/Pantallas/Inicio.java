@@ -147,18 +147,29 @@ public class Inicio extends javax.swing.JFrame {
 
     private void Seleccionar_ArchivoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Seleccionar_ArchivoActionPerformed
         // TODO add your handling code here:
-        TRutaArchivo.setText("");
-        String directorio="";
-        String nombreArchivo="";
-        FileDialog dialogoArchivo;
-        dialogoArchivo = new FileDialog(this, "ARCHIVOS RALAB",FileDialog.LOAD);
-        dialogoArchivo.setVisible(true);
-        if(dialogoArchivo.getFile()!=null){ /* Validar que se haya Seleccionado un Archivo*/
-             directorio = dialogoArchivo.getDirectory();
-             nombreArchivo =dialogoArchivo.getFile();
-             TRutaArchivo.setText(directorio+nombreArchivo);
-              VRutaAr=directorio+nombreArchivo;  
-        }
+      TRutaArchivo.setText("");
+String directorio = "";
+String nombreArchivo = "";
+FileDialog dialogoArchivo;
+dialogoArchivo = new FileDialog(this, "ARCHIVOS RALAB", FileDialog.LOAD);
+dialogoArchivo.setVisible(true);
+
+if (dialogoArchivo.getFile() != null) { // Validar que se haya seleccionado un archivo
+    directorio = dialogoArchivo.getDirectory();
+    nombreArchivo = dialogoArchivo.getFile();
+
+    // Validar que sea un archivo .xlsx
+    if (nombreArchivo.toLowerCase().endsWith(".xlsx")) {
+        String rutaCompleta = directorio + nombreArchivo;
+        TRutaArchivo.setText(rutaCompleta);
+        VRutaAr = rutaCompleta;
+    } else {
+        JOptionPane.showMessageDialog(this, 
+            "Por favor selecciona un archivo con extensión .xlsx", 
+            "Archivo inválido", 
+            JOptionPane.ERROR_MESSAGE);
+    }
+}
         
     }//GEN-LAST:event_Seleccionar_ArchivoActionPerformed
 
