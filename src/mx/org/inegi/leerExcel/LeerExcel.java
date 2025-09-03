@@ -50,8 +50,8 @@ public class LeerExcel {
         f.setVisible(true);
 
         progressBar.setValue(0);
-        try ( FileInputStream fis = new FileInputStream(filePath);  Workbook workbook = new XSSFWorkbook(fis)) {
-
+        progressBar.setValue(5);
+        try ( FileInputStream fis = new FileInputStream(filePath);  Workbook workbook = new XSSFWorkbook(fis)) { 
             int numberOfSheets = workbook.getNumberOfSheets();
             progressBar.setValue(15);
             for (int i = 0; i < numberOfSheets; i++) {
