@@ -1,0 +1,7 @@
+2025-09-03 16:51:12.331970-06:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "ROLES" not found (this database is empty); SQL statement:
+SELECT * FROM ROLES [42104-232]
+2025-09-04 14:17:11.646037-06:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Tabla "ROLOLON" no encontrada
+Table "ROLOLON" not found; SQL statement:
+SELECT * FROM ROLolon [42102-232]
