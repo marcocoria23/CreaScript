@@ -192,7 +192,7 @@ public class LeerExcel {
                                     colKey = c;
                                     NombreColumna++;
                                 }
-                                if (header.startsWith("OBLIGA")) {
+                                if (header.startsWith("NULLA")) {
                                     colObligatorio = c;
                                     NombreColumna++;
                                 }
@@ -248,7 +248,7 @@ public class LeerExcel {
                                         createReferencias.append("   ALTER TABLE ").append(Cel.LeerCelda(sheet, 3, 0)).append(" ADD CONSTRAINT FK").append(Cel.LeerCelda(sheet, 3, 0).replace("TR_", "").replace("_", "")).append("_").append(campo).append(" FOREIGN KEY (").append(CampoRef).append(")\n").append("REFERENCES ").append(ColCatRef).append("(").append(CampoRef).append(") ENABLE; \n");
                                     }
 
-                                    if (Obligatorio != null && Obligatorio.equalsIgnoreCase("SI")) {
+                                    if (Obligatorio != null && Obligatorio.equalsIgnoreCase("NO")) {
                                         if (!campo.isEmpty() && !tipo.isEmpty()) {
                                             createSQL.append("    ").append(campo).append(" ").append(tipo).append(" NOT NULL,\n");
                                         }
