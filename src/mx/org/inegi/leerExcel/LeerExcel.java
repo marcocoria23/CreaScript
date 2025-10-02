@@ -254,7 +254,7 @@ public class LeerExcel {
                                         }
                                     }
 
-                                    if (Obligatorio != null && !Obligatorio.equalsIgnoreCase("SI")) {
+                                    if (Obligatorio != null && !Obligatorio.equalsIgnoreCase("NO")) {
                                         if (!campo.isEmpty() && !tipo.isEmpty()) {
                                             createSQL.append("    ").append(campo).append(" ").append(tipo).append(",\n");
                                         }
