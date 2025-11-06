@@ -10,6 +10,8 @@ import java.util.List;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -33,6 +35,8 @@ public class LeerExcel {
         createSQL = new StringBuilder();
         createReferencias = new StringBuilder();
         boolean BGuarArchivo=true; 
+        StringBuilder createSQL = new StringBuilder();
+        StringBuilder createReferencias = new StringBuilder();
 
         JFrame f = new JFrame("Progreso Genera Script .xls");
         f.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -169,141 +173,142 @@ public class LeerExcel {
             }
             progressBar.setValue(50);
             //Procesa Script estructura TR   
-            for (int i = 0; i < numberOfSheets; i++) {
-                String sheetName = workbook.getSheetName(i);
-                if (sheetName.startsWith("TR_")) {
-                    Sheet sheet = workbook.getSheet(sheetName);
-                    if (sheet != null) {
-                        Row headerRow = sheet.getRow(4);
-                        if (headerRow != null) {
-                            int colCampo = -1;
-                            int colTipo = -1;
-                            int colKey = -1;
-                            int colObligatorio = -1;
-                            int colCatalogo = -1;
-                            int colReferencia = -1;
-                            int ColNombreCatalogoRef = -1;
-                            int NombreColumna=0;
+Map<String, StringBuilder> referenciasPorTabla = new LinkedHashMap<>();
 
-                            for (int c = 0; c < headerRow.getLastCellNum(); c++) {
-                                String header = Cel.LeerCelda(sheet, 4, c).toUpperCase();
-                                if (header.startsWith("CAMPO")) {
-                                    colCampo = c;
-                                    NombreColumna++;
-                                }
-                                if (header.startsWith("TIPO")) {
-                                    colTipo = c;
-                                    NombreColumna++;
-                                }
-                                if (header.startsWith("KEY")) {
-                                    colKey = c;
-                                    NombreColumna++;
-                                }
-                                if (header.startsWith("NULLA")) {
-                                    colObligatorio = c;
-                                    NombreColumna++;
-                                }
-                                if (header.equals("CATALOGO")) {
-                                    colCatalogo = c;
-                                    NombreColumna++;
-                                }
-                                if (header.startsWith("REFERENCIA")) {
-                                    colReferencia = c;
-                                    NombreColumna++;
-                                }
-                                if (header.equals("CATALOGO O TABLA REFERENCIADO")) {
-                                    ColNombreCatalogoRef = c;
-                                    NombreColumna++;
-                                }
+for (int i = 0; i < numberOfSheets; i++) {
+    String sheetName = workbook.getSheetName(i);
+    if (sheetName.startsWith("TR_")) {
+        Sheet sheet = workbook.getSheet(sheetName);
+        if (sheet != null) {
+            Row headerRow = sheet.getRow(4);
+            if (headerRow != null) {
+
+                int colCampo = -1;
+                int colTipo = -1;
+                int colKey = -1;
+                int colObligatorio = -1;
+                int colCatalogo = -1;
+                int colReferencia = -1;
+                int ColNombreCatalogoRef = -1;
+                int NombreColumna = 0;
+
+                // 🔹 Buscar las columnas del encabezado
+                for (int c = 0; c < headerRow.getLastCellNum(); c++) {
+                    String header = Cel.LeerCelda(sheet, 4, c).toUpperCase();
+                    if (header.startsWith("CAMPO")) colCampo = c;
+                    if (header.startsWith("TIPO")) colTipo = c;
+                    if (header.startsWith("KEY")) colKey = c;
+                    if (header.startsWith("NULLA")) colObligatorio = c;
+                    if (header.equals("CATALOGO")) colCatalogo = c;
+                    if (header.startsWith("REFERENCIA")) colReferencia = c;
+                    if (header.equals("CATALOGO O TABLA REFERENCIADO")) ColNombreCatalogoRef = c;
+                    if (!header.isEmpty()) NombreColumna++;
+                }
+
+                if (NombreColumna >= 7) {
+                    if (colCampo == -1 || colTipo == -1 || colKey == -1 || colObligatorio == -1) {
+                        continue; // Saltar si faltan columnas
+                    }
+
+                    // 🔹 Comienza el CREATE TABLE
+                    String nombreTabla = Cel.LeerCelda(sheet, 3, 0);
+                    createSQL.append("CREATE TABLE ").append(nombreTabla).append(" (\n");
+
+                    List<String> pkFields = new ArrayList<>();
+                    StringBuilder referenciasTabla = new StringBuilder();
+
+                    // 🔹 Recorrer las filas de datos
+                    for (int r = 5; r <= sheet.getLastRowNum(); r++) {
+                        Row dataRow = sheet.getRow(r);
+                        if (dataRow == null) continue;
+
+                        String campo = Cel.LeerCelda(sheet, r, colCampo);
+                        String tipo = Cel.LeerCelda(sheet, r, colTipo);
+                        String key = Cel.LeerCelda(sheet, r, colKey);
+                        String obligatorio = Cel.LeerCelda(sheet, r, colObligatorio);
+
+                        // Campos
+                        if (obligatorio != null && obligatorio.equalsIgnoreCase("NO")) {
+                            if (!campo.isEmpty() && !tipo.isEmpty()) {
+                                createSQL.append("    ").append(campo).append(" ").append(tipo).append(" NOT NULL,\n");
                             }
-
-                         if (NombreColumna>=7)  
-                         {
-                            if (colCampo == -1 || colTipo == -1 || colKey == -1 || colObligatorio == -1) {
-                                // System.out.println("Faltan columnas obligatorias en " + sheetName);
-                            } else {
-
-                                createSQL.append("CREATE TABLE ").append(Cel.LeerCelda(sheet, 3, 0)).append(" (\n");
-
-                                // Lista para guardar campos que son PK
-                                List<String> pkFields = new ArrayList<>();
-
-                                //Lista para guardar campos que son Obligatorios 
-                                for (int r = 5; r <= sheet.getLastRowNum(); r++) {
-                                    Row dataRow = sheet.getRow(r);
-                                    if (dataRow == null) {
-                                        continue;
-                                    }
-
-                                    String campo = Cel.LeerCelda(sheet, r, colCampo);
-                                    String tipo = Cel.LeerCelda(sheet, r, colTipo);
-                                    String key = Cel.LeerCelda(sheet, r, colKey);
-                                    String Obligatorio = Cel.LeerCelda(sheet, r, colObligatorio);
-
-                                    if ((colCatalogo != -1) && (colReferencia != -1) && (ColNombreCatalogoRef != -1)) {
-                                        String Ref = Cel.LeerCelda(sheet, r, colCatalogo);
-                                        String CampoRef = Cel.LeerCelda(sheet, r, colReferencia);
-                                        String ColCatRef = Cel.LeerCelda(sheet, r, ColNombreCatalogoRef);
-
-                                        if (Ref != null && Ref.equalsIgnoreCase("SI")) {
-                                            createReferencias.append("   ALTER TABLE ").append(Cel.LeerCelda(sheet, 3, 0)).append(" ADD CONSTRAINT FK").append(Cel.LeerCelda(sheet, 3, 0).replace("TR_", "").replace("_", "")).append("_").append(campo).append(" FOREIGN KEY (").append(campo).append(")\n").append("REFERENCES ").append(ColCatRef).append("(").append(CampoRef).append(") ENABLE; \n");
-                                        }
-                                    }
-                                    if (key != null && key.equalsIgnoreCase("TR-FK")) {
-                                        String CampoRef = Cel.LeerCelda(sheet, r, colReferencia);
-                                        String ColCatRef = Cel.LeerCelda(sheet, r, ColNombreCatalogoRef);
-                                        createReferencias.append("   ALTER TABLE ").append(Cel.LeerCelda(sheet, 3, 0)).append(" ADD CONSTRAINT FK").append(Cel.LeerCelda(sheet, 3, 0).replace("TR_", "").replace("_", "")).append("_").append(campo).append(" FOREIGN KEY (").append(CampoRef).append(")\n").append("REFERENCES ").append(ColCatRef).append("(").append(CampoRef).append(") ENABLE; \n");
-                                    }
-
-                                    if (Obligatorio != null && Obligatorio.equalsIgnoreCase("NO")) {
-                                        if (!campo.isEmpty() && !tipo.isEmpty()) {
-                                            createSQL.append("    ").append(campo).append(" ").append(tipo).append(" NOT NULL,\n");
-                                        }
-                                    }
-
-                                    if (Obligatorio != null && !Obligatorio.equalsIgnoreCase("NO")) {
-                                        if (!campo.isEmpty() && !tipo.isEmpty()) {
-                                            createSQL.append("    ").append(campo).append(" ").append(tipo).append(",\n");
-                                        }
-                                    }
-
-                                    if (key != null && key.equalsIgnoreCase("PK")) {
-                                        pkFields.add(campo);
-                                    }
-
-                                }
-
-                                // Agregar PRIMARY KEY si hay campos
-                                if (!pkFields.isEmpty()) {
-                                    createSQL.append("    PRIMARY KEY (");
-                                    createSQL.append(String.join(", ", pkFields));
-                                    createSQL.append(")\n");
-                                } else {
-                                    // Eliminar la última coma si no hay PK
-                                    int lastIndex = createSQL.lastIndexOf(",");
-                                    if (lastIndex != -1) {
-                                        createSQL.deleteCharAt(lastIndex);
-                                    }
-                                }
-
-                                createSQL.append(");\n");
-
-                                createSQL.append(createReferencias);
-                                createReferencias.setLength(0);
-
-                                // System.out.println(createSQL.toString());
+                        } else if (obligatorio != null) {
+                            if (!campo.isEmpty() && !tipo.isEmpty()) {
+                                createSQL.append("    ").append(campo).append(" ").append(tipo).append(",\n");
                             }
                         }
-                         else{
-                              JOptionPane.showMessageDialog(null, "favor de Verificar nombre de encabezado en la pestaña "+sheetName);
-                              BGuarArchivo=false;
-                              break;
-                         }
+
+                        // PK
+                        if (key != null && key.equalsIgnoreCase("PK")) {
+                            pkFields.add(campo);
+                        }
+
+                        // 🔹 Guardar referencias de la tabla
+                        if ((colCatalogo != -1) && (colReferencia != -1) && (ColNombreCatalogoRef != -1)) {
+                            String Ref = Cel.LeerCelda(sheet, r, colCatalogo);
+                            String CampoRef = Cel.LeerCelda(sheet, r, colReferencia);
+                            String ColCatRef = Cel.LeerCelda(sheet, r, ColNombreCatalogoRef);
+
+                            if (Ref != null && Ref.equalsIgnoreCase("SI")) {
+                                referenciasTabla.append("ALTER TABLE ").append(nombreTabla)
+                                        .append(" ADD CONSTRAINT FK")
+                                        .append(nombreTabla.replace("TR_", "").replace("_", ""))
+                                        .append("_").append(campo)
+                                        .append(" FOREIGN KEY (").append(campo).append(") ")
+                                        .append("REFERENCES ").append(ColCatRef)
+                                        .append("(").append(CampoRef).append(");\n");
+                            }
+                        }
+
+                        if (key != null && key.equalsIgnoreCase("TR-FK")) {
+                            String CampoRef = Cel.LeerCelda(sheet, r, colReferencia);
+                            String ColCatRef = Cel.LeerCelda(sheet, r, ColNombreCatalogoRef);
+                            referenciasTabla.append("ALTER TABLE ").append(nombreTabla)
+                                    .append(" ADD CONSTRAINT FK")
+                                    .append(nombreTabla.replace("TR_", "").replace("_", ""))
+                                    .append("_").append(campo)
+                                    .append(" FOREIGN KEY (").append(CampoRef).append(") ")
+                                    .append("REFERENCES ").append(ColCatRef)
+                                    .append("(").append(CampoRef).append(");\n");
                         }
                     }
+
+                    // 🔹 Agregar PRIMARY KEY si existe
+                    if (!pkFields.isEmpty()) {
+                        createSQL.append("    PRIMARY KEY (")
+                                 .append(String.join(", ", pkFields))
+                                 .append(")\n");
+                    } else {
+                        int lastIndex = createSQL.lastIndexOf(",");
+                        if (lastIndex != -1) createSQL.deleteCharAt(lastIndex);
+                    }
+
+                    createSQL.append(");\n\n");
+
+                    // 🔹 Guardar las referencias en el mapa (si tiene)
+                    if (referenciasTabla.length() > 0) {
+                        referenciasPorTabla.put(nombreTabla, referenciasTabla);
+                    }
+
+                } else {
+                    JOptionPane.showMessageDialog(null, "Verifique encabezado en la pestaña " + sheetName);
+                    BGuarArchivo = false;
+                    break;
                 }
             }
+        }
+    }
+}
 
+// 🔹 Sección final de FOREIGN KEYS agrupadas
+createSQL.append("-- =============================================\n");
+createSQL.append("-- FOREIGN KEYS (REFERENCIAS)\n");
+createSQL.append("-- =============================================\n\n");
+
+for (Map.Entry<String, StringBuilder> entry : referenciasPorTabla.entrySet()) {
+    createSQL.append("-- REFERENCIAS PARA ").append(entry.getKey()).append("\n");
+    createSQL.append(entry.getValue()).append("\n");
+}
         progressBar.setValue(100);
         f.setVisible(false);    
             
