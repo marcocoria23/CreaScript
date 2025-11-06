@@ -74,25 +74,32 @@ public class LeerExcel {
                             List<String> pkFields = new ArrayList<>();
 
                             createSQL.append("CREATE TABLE ").append(Cel.LeerCelda(sheet, 0, 0)).append(" (\n");
+                            
 
                             for (int j = 0; j < encabezados.size(); j++) {
                                 String colName = encabezados.get(j);
-                               if (colName.startsWith("CAT") || colName.startsWith("ID"))
-                               {
-                                if (j == 0) {
-                                createSQL.append("    ").append(colName).append(" NUMBER PRIMARY KEY");
-                                }   
-                                else{
-                                 createSQL.append("    ").append(colName).append(" NUMBER");      
-                                }  
-                               }else{
-                                 createSQL.append("    ").append(colName).append(" VARCHAR2(600)");
-                               }
+                                if (colName.startsWith("CAT") || colName.startsWith("ID")) {
+                                    if (j == 0) {
+                                       
+                                            createSQL.append("    ").append(colName).append(" NUMBER    ");
+                                             
+                                          
+                                    } else {
+                                        createSQL.append("    ").append(colName).append(" NUMBER");
+                                    }
+                                } else {
+                                    createSQL.append("    ").append(colName).append(" VARCHAR2(600)");
+                                }
                                 if (j < encabezados.size() - 1) {
                                     createSQL.append(",");
                                 }
-                                createSQL.append("\n");
                             }
+                            /* CREAR PRIMARY KEY */
+                            
+                            
+                            createSQL.append(",  \n PRIMARY KEY ( ").append(Cel.LeerCelda(sheet, 0, 2)).append(") ");
+                                createSQL.append("\n");
+                                
                           /*  if (encabezados.size() > 2) {
                                 if (!pkFields.isEmpty()) {
                                     createSQL.append("    PRIMARY KEY (");
